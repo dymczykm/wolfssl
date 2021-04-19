@@ -47,6 +47,8 @@ set(WOLFSSL_LINK_LIBS)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/functions.cmake)
 
+include_directories(BEFORE ${CMAKE_SYSTEM_PREFIX_PATH}/include/retrogusi/)
+
 ####################################################
 # Compiler
 ####################################################
@@ -66,27 +68,56 @@ endif()
 
 include(CheckIncludeFile)
 
-check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
-check_include_file("fcntl.h" HAVE_FCNTL_H)
-check_include_file("limits.h" HAVE_LIMITS_H)
-check_include_file("netdb.h" HAVE_NETDB_H)
-check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
-check_include_file("stddef.h" HAVE_STDDEF_H)
-check_include_file("time.h" HAVE_TIME_H)
-check_include_file("sys/ioctl.h" HAVE_SYS_IOCTL_H)
-check_include_file("sys/socket.h" HAVE_SYS_SOCKET_H)
-check_include_file("sys/time.h" HAVE_SYS_TIME_H)
-check_include_file("errno.h" HAVE_ERRNO_H)
-check_include_file("dlfcn.h" HAVE_DLFCN_H)
-check_include_file("inttypes.h" HAVE_INTTYPES_H)
-check_include_file("memory.h" HAVE_MEMORY_H)
-check_include_file("stdint.h" HAVE_STDINT_H)
-check_include_file("stdlib.h" HAVE_STDLIB_H)
-check_include_file("string.h" HAVE_STRING_H)
-check_include_file("strings.h" HAVE_STRINGS_H)
-check_include_file("sys/stat.h" HAVE_SYS_STAT_H)
-check_include_file("sys/types.h" HAVE_SYS_TYPES_H)
-check_include_file("unistd.h" HAVE_UNISTD_H)
+#check_include_file("arpa/inet.h" HAVE_ARPA_INET_H)
+#check_include_file("fcntl.h" HAVE_FCNTL_H)
+#check_include_file("limits.h" HAVE_LIMITS_H)
+#check_include_file("netdb.h" HAVE_NETDB_H)
+#check_include_file("netinet/in.h" HAVE_NETINET_IN_H)
+#check_include_file("stddef.h" HAVE_STDDEF_H)
+#check_include_file("time.h" HAVE_TIME_H)
+#check_include_file("sys/ioctl.h" HAVE_SYS_IOCTL_H)
+#check_include_file("sys/socket.h" HAVE_SYS_SOCKET_H)
+#check_include_file("sys/time.h" HAVE_SYS_TIME_H)
+#check_include_file("errno.h" HAVE_ERRNO_H)
+#check_include_file("dlfcn.h" HAVE_DLFCN_H)
+#check_include_file("inttypes.h" HAVE_INTTYPES_H)
+#check_include_file("memory.h" HAVE_MEMORY_H)
+#check_include_file("stdint.h" HAVE_STDINT_H)
+#check_include_file("stdlib.h" HAVE_STDLIB_H)
+#check_include_file("string.h" HAVE_STRING_H)
+#check_include_file("strings.h" HAVE_STRINGS_H)
+#check_include_file("sys/stat.h" HAVE_SYS_STAT_H)
+#check_include_file("sys/types.h" HAVE_SYS_TYPES_H)
+#check_include_file("unistd.h" HAVE_UNISTD_H)
+
+# Couldn't force it to find GUSI headers.
+add_definitions(
+-DHAVE_ARPA_INET_H
+-DHAVE_FCNTL_H
+-DHAVE_LIMITS_H
+-DHAVE_NETDB_H
+-DHAVE_NETINET_IN_H
+-DHAVE_STDDEF_H
+-DHAVE_TIME_H
+-DHAVE_SYS_IOCTL_H
+-DHAVE_SYS_SOCKET_H
+-DHAVE_SYS_TIME_H
+-DHAVE_ERRNO_H
+-DHAVE_DLFCN_H
+-DHAVE_INTTYPES_H
+-DHAVE_MEMORY_H
+-DHAVE_STDINT_H
+-DHAVE_STDLIB_H
+-DHAVE_STRING_H
+-DHAVE_STRINGS_H
+-DHAVE_SYS_STAT_H
+-DHAVE_SYS_TYPES_H
+-DHAVE_UNISTD_H
+)
+
+add_definitions(
+-DNO_FILESYSTEM
+)
 
 include(CheckFunctionExists)
 
@@ -102,6 +133,10 @@ check_function_exists("memset" HAVE_MEMSET)
 check_function_exists("socket" HAVE_SOCKET)
 check_function_exists("strftime" HAVE_STRFTIME)
 
+add_definitions(
+        -DHAVE_SOCKET
+)
+
 include(CheckTypeSize)
 
 check_type_size("__uint128_t" __UINT128_T)
@@ -115,9 +150,9 @@ if(HAVE___UINT128_T)
     set(HAVE___UINT128_T "1" CACHE INTERNAL "Result of TRY_COMPILE" FORCE)
 endif()
 
-include(TestBigEndian)
-
-test_big_endian(WORDS_BIGENDIAN)
+# FIXME
+#include(TestBigEndian)
+#test_big_endian(WORDS_BIGENDIAN)
 
 # Thread local storage
 include(CheckCSourceCompiles)
@@ -149,9 +184,13 @@ foreach(TLS_KEYWORD IN LISTS TLS_KEYWORDS)
     endif()
 endforeach()
 
+# FIXME
+unset(THREAD_LS_ON)
+
+# FIXME
 # TODO: AX_PTHREAD does a lot. Need to implement the
 #       rest of its logic.
-find_package(Threads)
+#find_package(Threads)
 
 ####################################################
 # Cross Compile Example
@@ -197,7 +236,7 @@ add_option("WOLFSSL_SINGLE_THREADED" ${WOLFSSL_SINGLE_THREADED_HELP_STRING} "no"
 # TODO: Logic here isn't complete, yet (see AX_PTHREAD)
 if(NOT WOLFSSL_SINGLE_THREADED)
     if(CMAKE_USE_PTHREADS_INIT)
-        list(APPEND WOLFSSL_LINK_LIBS Threads::Threads)
+        list(APPEND WOLFSSL_LINK_LIBS RetroGUSI)
         list(APPEND WOLFSSL_DEFINITIONS
             "-DHAVE_PTHREAD"
             "-D_POSIX_THREADS")
@@ -1243,7 +1282,7 @@ else()
 endif()
 
 if(WOLFSSL_ASYNC_THREADS)
-    list(APPEND WOLFSSL_LINK_LIBS Threads::Threads)
+    list(APPEND WOLFSSL_LINK_LIBS RetroGUSI)
     list(APPEND WOLFSSL_DEFINITIONS "-D_GNU_SOURCE")
 else()
     list(APPEND WOLFSSL_DEFINITIONS "-DWC_NO_ASYNC_THREADING")
@@ -1438,7 +1477,8 @@ endif()
 # Tests and Examples
 ####################################################
 
-if(WOLFSSL_EXAMPLES)
+# FIXME
+if(false) #WOLFSSL_EXAMPLES)
     # Build wolfSSL client example
     add_executable(client
         ${CMAKE_CURRENT_SOURCE_DIR}/examples/client/client.c)
@@ -1480,7 +1520,7 @@ if(WOLFSSL_EXAMPLES)
         add_executable(tls_bench
             ${CMAKE_CURRENT_SOURCE_DIR}/examples/benchmark/tls_bench.c)
         target_link_libraries(tls_bench wolfssl)
-        target_link_libraries(tls_bench Threads::Threads)
+        target_link_libraries(tls_bench RetroGUSI)
         set_property(TARGET tls_bench
                  PROPERTY RUNTIME_OUTPUT_DIRECTORY
                  ${CMAKE_CURRENT_SOURCE_DIR}/examples/benchmark)
@@ -1499,7 +1539,7 @@ if(WOLFSSL_EXAMPLES)
         ${CMAKE_CURRENT_BINARY_DIR})
     target_compile_options(unit_test PUBLIC "-DNO_MAIN_DRIVER")
     target_link_libraries(unit_test wolfssl)
-    target_link_libraries(unit_test Threads::Threads)
+    target_link_libraries(unit_test RetroGUSI)
     set_property(TARGET unit_test
                  PROPERTY RUNTIME_OUTPUT_DIRECTORY
                  ${CMAKE_CURRENT_SOURCE_DIR}/tests/)
@@ -1510,28 +1550,30 @@ endif()
 
 if(WOLFSSL_CRYPT_TESTS)
     # Build wolfCrypt test
-    add_executable(wolfcrypttest
-        ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/test/test.c)
-    target_link_libraries(wolfcrypttest wolfssl)
-    set_property(TARGET wolfcrypttest
-                 PROPERTY RUNTIME_OUTPUT_DIRECTORY
-                 ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/test)
-    set_property(TARGET wolfcrypttest
-                 PROPERTY RUNTIME_OUTPUT_NAME
-                 testwolfcrypt)
+    #add_executable(wolfcrypttest
+    #    ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/test/test.c)
+    #target_link_libraries(wolfcrypttest wolfssl)
+    #set_property(TARGET wolfcrypttest
+    #             PROPERTY RUNTIME_OUTPUT_DIRECTORY
+    #             ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/test)
+    #set_property(TARGET wolfcrypttest
+    #             PROPERTY RUNTIME_OUTPUT_NAME
+    #             testwolfcrypt)
 
     # Build wolfCrypt benchmark
     add_executable(wolfcryptbench
-        ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/benchmark/benchmark.c)
+        ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/benchmark/benchmark.c) # CONSOLE)
     target_include_directories(wolfcryptbench PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(wolfcryptbench wolfssl)
+    target_link_libraries(wolfcryptbench RetroGUSI wolfssl)
     set_property(TARGET wolfcryptbench
                  PROPERTY RUNTIME_OUTPUT_DIRECTORY
                  ${CMAKE_CURRENT_SOURCE_DIR}/wolfcrypt/benchmark)
     set_property(TARGET wolfcryptbench
                  PROPERTY RUNTIME_OUTPUT_NAME
                  benchmark)
+    #set_target_properties(wolfcryptbench PROPERTIES COMPILE_OPTIONS -ffunction-sections)
+    #set_target_properties(wolfcryptbench PROPERTIES LINK_FLAGS "-Wl,-gc-sections")
 endif()
 
 ####################################################

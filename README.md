@@ -2,6 +2,12 @@
     <img src="https://repology.org/badge/vertical-allrepos/wolfssl.svg" alt="Packaging status" align="right">
 </a>
 
+# Retro68 hacking
+```
+cmake ../wolfssl -DCMAKE_TOOLCHAIN_FILE=../Retro68-build/toolchain/m68k-apple-macos/cmake/retro68.toolchain.cmake
+make -j8
+```
+
 # wolfSSL Embedded SSL/TLS Library
 
 The [wolfSSL embedded SSL library](https://www.wolfssl.com/products/wolfssl/) 
