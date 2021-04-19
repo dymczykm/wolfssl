@@ -8,6 +8,8 @@ cmake ../wolfssl -DCMAKE_TOOLCHAIN_FILE=../Retro68-build/toolchain/m68k-apple-ma
 make -j8
 ```
 
+[diff against master](https://github.com/dymczykm/wolfssl/compare/master...dymczykm:feature/retro68-compatibility?expand=1)
+
 # wolfSSL Embedded SSL/TLS Library
 
 The [wolfSSL embedded SSL library](https://www.wolfssl.com/products/wolfssl/) 
